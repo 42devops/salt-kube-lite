@@ -25,3 +25,52 @@ setting version on `scripts/download.sh` if you want, and update `Makefile` for 
 ```bash
 make download
 ```
+
+### Startup local env using vagrant
+
+if got some error, re-run `make init`
+
+```bash
+make init
+make init
+```
+
+### Login local env to test
+
+```bash
+vagrant ssh salt
+sudo su -
+kubectl get no
+```
+
+### Other notes
+
+1. init cluster manual by command
+
+```bash
+vagrant up
+vagrant ssh salt
+# testing salt minions
+salt \* test.ping
+# sync all modules for salt
+salt-run saltutil.sync_all saltenv=local
+# setting roles for def whith salt/<env>/roles.yaml
+salt-run state.orchestrate orch.setting_roles saltenv=local
+# run orchstate for kubernetes install
+salt-run state.orchestrate orch.kubernetes saltenv=local
+```
+
+> pls notes setting local vm networks interfaces into Pillar files `pillar/local/common/init.sls`
+
+2. if you want add requirements packages
+
+add it into this files:
+
+- `pillar/local/common/packages_ubuntu.sls`
+
+### TODO
+
+- remove Docker, add Containerd as default container runtime
+- remove Flannel, add Cilium as default network
+- add terraform to provision cloud resources
+- ...
