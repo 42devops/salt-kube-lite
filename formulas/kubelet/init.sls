@@ -7,7 +7,6 @@ include:
 {{ certs('node:' + grains['nodename'],
          pillar['ssl']['kubelet_crt'],
          pillar['ssl']['kubelet_key'],
-         cn = 'system:node',
          o = 'system:nodes') }}
 
 kubeconfig:
