@@ -6,9 +6,9 @@ the lite version for cleanup salt-kube project and support new kubernetes, full 
 
 - Ubuntu 18.04
 - Saltstack 2018.3.3
-- Etcd v3.3.12
-- Docker v18.0.6-ce
-- Flannel v0.11.0
+- Etcd v3.3.20
+- Containerd 1.3.4
+- Cilium 1.5.5
 - Kubernetes v1.17.5
 - CoreDNS v1.5.0
 
@@ -70,7 +70,7 @@ add it into this files:
 
 ### TODO
 
-- remove Docker, add Containerd as default container runtime
-- remove Flannel, add Cilium as default network
+- ~~remove Docker, add Containerd as default container runtime~~
+- ~~remove Flannel, add Cilium as default network~~
 - add terraform to provision cloud resources
 - ...
