@@ -25,7 +25,7 @@ local:
     - kube.params
   'roles:kube-minion':
     - match: grain
-    - docker
+    - containerd
   'roles:etcd':
     - match: grain
     - etcd

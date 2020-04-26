@@ -15,7 +15,7 @@ CPU:           {{ grains['num_cpus'] }} x {{ grains['cpu_model'] }}
 Salt Version:  {{ grains['saltversion'] }}
 
 
-Container Runtime: {{ salt['pillar.get']('cri:{}:description'.format(salt.caasp_cri.cri_name()), 'unknown') }}
+Container Runtime: {{ salt['pillar.get']('{}:description'.format(salt.caasp_cri.cri_name()), 'containerd') }}
 
 The Salt Roles of this node are:
 {%- for role in salt['grains.get']('roles', []) %}

@@ -34,6 +34,8 @@ spec:
         - --kvstore=etcd
         - --kvstore-opt=etcd.config=/var/lib/etcd-config/etcd.config
         - --config-dir=/tmp/cilium/config-map
+        - --container-runtime=containerd
+        - --container-runtime-endpoint=containerd=/var/run/containerd/containerd.sock
         command:
         - cilium-agent
         env:
@@ -130,8 +132,8 @@ spec:
           name: cni-path
         - mountPath: /host/etc/cni/net.d
           name: etc-cni-netd
-        - mountPath: /var/run/docker.sock
-          name: docker-socket
+        - mountPath: /var/run/containerd/containerd.sock
+          name: containerd-socket
           readOnly: true
         - mountPath: /var/lib/etcd-config
           name: etcd-config-path
@@ -209,17 +211,9 @@ spec:
           type: DirectoryOrCreate
         name: bpf-maps
         # To read docker events from the node
-{% if salt.caasp_pillar.get('cri:chosen', 'docker') == 'crio' %}
-        # To read crio events from the node
-      - name: crio-socket
+      - name: containerd-socket
         hostPath:
-          path: /var/run/crio/crio.sock
-{% else %}
-        # To read docker events from the node
-      - name: docker-socket
-        hostPath:
-          path: /var/run/docker.sock
-{% endif %}
+          path: /var/run/containerd/containerd.sock
         # To install cilium cni plugin in the host
       - hostPath:
           path: /opt/cni/bin

@@ -5,8 +5,8 @@
 [Unit]
 Description=Kubernetes Kubelet
 Documentation=https://github.com/kubernetes/kubernetes
-After=docker.service
-Requires=docker.service
+After=containerd.service
+Requires=containerd.service
 
 [Service]
 ExecStart=/usr/local/bin/kubelet \
@@ -14,19 +14,17 @@ ExecStart=/usr/local/bin/kubelet \
 {%- if salt.caasp_pillar.get('kubernetes:lookup:kubelet:pod_infra_container_image')  %}
   --pod-infra-container-image={{ pod_infra_container_image }} \
 {%- endif %}
+  --container-runtime=remote \
+  --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \
   --alsologtostderr=true \
   --logtostderr=false \
   --image-pull-progress-deadline=5m \
   --kubeconfig={{ pillar['paths']['kubelet_config'] }} \
   --register-node=true \
-{%- if salt.caasp_pillar.get('cni:plugin') == 'cilium' %}
   --network-plugin=cni \
   --cni-conf-dir=/etc/cni/net.d \
   --cni-bin-dir=/opt/cni/bin  \
   --feature-gates="RotateKubeletServerCertificate=true,CustomResourceValidation=true" \
-{%- elif salt.caasp_pillar.get('cni:plugin') == 'flannel' %}
-  --feature-gates=RotateKubeletServerCertificate=true \
-{%- endif %}
   --v=2
 Restart=on-failure
 RestartSec=5

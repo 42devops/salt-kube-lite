@@ -4,7 +4,7 @@ include:
   - .install
 
 {% from '_macros/certs.jinja' import certs with context %}
-{{ certs("kube-scheduler", pillar['ssl']['kube_scheduler_crt'], pillar['ssl']['kube_scheduler_key']) }}
+{{ certs("kube-scheduler", pillar['ssl']['kube_scheduler_crt'], pillar['ssl']['kube_scheduler_key'], o='system:kube-scheduler') }}
 
 
 kube-scheduler-config:

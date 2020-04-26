@@ -6,7 +6,6 @@ include:
 {{ certs('kube-proxy',
          pillar['ssl']['kube_proxy_crt'],
          pillar['ssl']['kube_proxy_key'],
-         cn = 'system:kube-proxy',
          o = 'system:node-proxier') }}
 
 {{ pillar['paths']['kube_proxy_config'] }}:

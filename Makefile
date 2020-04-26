@@ -3,11 +3,11 @@ GIT_SHA = $(shell git log --pretty=oneline | head -n1 | cut -c1-8)
 PACKAGE = "salt_config-$(GIT_SHA).tgz"
 SHASUM = $(shell test `uname` == 'Darwin' && echo shasum -a 256 || echo sha256sum)
 env := "local"
-KUBE_VERSION := "1.16.8"
-DOCKER_VERSION := "18.06.3"
-FLANNEL_VERSION := "0.11.0"
-ETCD_VERSION := "3.3.12"
-CNI_PLUGINS_VERSION := "v0.8.1"
+KUBE_VERSION := "1.17.5"
+ETCD_VERSION := "3.3.20"
+CNI_PLUGINS_VERSION := "v0.8.5"
+CONTAINERD_VERSION := "1.3.4"
+CRICTL_VERSION := "v1.17.0"
 
 all: formulas
 	@mkdir -p dist
@@ -28,9 +28,10 @@ all: formulas
 	@rsync -a scripts/binaries/kube-proxy dist/formulas/kube-proxy/files
 	@rsync -a scripts/binaries/kubelet dist/formulas/kubelet/files
 	@rsync -a scripts/binaries/etcd-v$(ETCD_VERSION)-linux-amd64.tar.gz dist/formulas/etcd/files
-	@rsync -a scripts/binaries/docker-$(DOCKER_VERSION)-ce.tgz dist/formulas/docker/files
-	@rsync -a scripts/binaries/flannel-v$(FLANNEL_VERSION)-linux-amd64.tar.gz dist/formulas/kube-cni/flannel/files
 	@rsync -a scripts/binaries/cni-plugins-linux-amd64-$(CNI_PLUGINS_VERSION).tgz dist/formulas/kube-cni/cni/files
+	@rsync -a scripts/binaries/containerd-$(CONTAINERD_VERSION).linux-amd64.tar.gz dist/formulas/containerd/files
+	@rsync -a scripts/binaries/crictl-$(CRICTL_VERSION)-linux-amd64.tar.gz dist/formulas/containerd/files
+	@rsync -a scripts/binaries/runc.amd64 dist/formulas/containerd/files
 	@echo $(GIT_SHA) > ./dist/SHA
 	@find ./dist -type f | sort | xargs $(SHASUM) | sed "s;./dist;/srv;" > MANIFEST
 	@$(SHASUM) MANIFEST | cut -d\  -f1 > MANIFEST.sha256
@@ -45,7 +46,6 @@ localinstall:
 	@rsync -a scripts/binaries/kube-proxy dist/formulas/kube-proxy/files
 	@rsync -a scripts/binaries/kubelet dist/formulas/kubelet/files
 	@rsync -a scripts/binaries/etcd-v$(ETCD_VERSION)-linux-amd64.tar.gz dist/formulas/etcd/files
-	@rsync -a scripts/binaries/flannel-v$(FLANNEL_VERSION)-linux-amd64.tar.gz dist/formulas/kube-cni/flannel/files
 	@rsync -a scripts/binaries/cni-plugins-linux-amd64-$(CNI_PLUGINS_VERSION).tgz dist/formulas/kube-cni/cni/files
 lint:
 	@tests/lint.sh

@@ -29,25 +29,8 @@ trap cleanup SIGHUP SIGINT SIGTERM
 pushd $(dirname $0)
 mkdir -p binaries
 
-# docker
-DOCKER_VERSION=${DOCKER_VERSION:-"18.06.3"}
-DOCKER="docker-${DOCKER_VERSION}-ce"
-echo "Prepare docker ${DOCKER_VERSION} release ..."
-grep -q "^${DOCKER_VERSION}\$" binaries/.docker 2>/dev/null || {
-  curl -L https://download.docker.com/linux/static/stable/x86_64/${DOCKER}.tgz -o binaries/${DOCKER}.tgz
-  echo ${DOCKER_VERSION} > binaries/.docker
-}
-
-# flannel
-FLANNEL_VERSION=${FLANNEL_VERSION:-"0.11.0"}
-echo "Prepare flannel ${FLANNEL_VERSION} release ..."
-grep -q "^${FLANNEL_VERSION}\$" binaries/.flannel 2>/dev/null || {
-  curl -L  https://github.com/coreos/flannel/releases/download/v${FLANNEL_VERSION}/flannel-v${FLANNEL_VERSION}-linux-amd64.tar.gz -o binaries/flannel-v${FLANNEL_VERSION}-linux-amd64.tar.gz
-  echo ${FLANNEL_VERSION} > binaries/.flannel
-}
-
 # ectd
-ETCD_VERSION=${ETCD_VERSION:-"3.3.12"}
+ETCD_VERSION=${ETCD_VERSION:-"3.3.20"}
 ETCD="etcd-v${ETCD_VERSION}-linux-amd64"
 echo "Prepare etcd ${ETCD_VERSION} release ..."
 grep -q "^${ETCD_VERSION}\$" binaries/.etcd 2>/dev/null || {
@@ -69,7 +52,7 @@ grep -q "^${KUBE_VERSION}\$" binaries/.kubernetes 2>/dev/null || {
 }
 
 # cni-plugins
-CNI_PLUGINS_VERSION=${CNI_PLUGINS_VERSION:-"v0.8.1"}
+CNI_PLUGINS_VERSION=${CNI_PLUGINS_VERSION:-"v0.8.5"}
 CNI_PLUGINS="cni-plugins-linux-amd64-${CNI_PLUGINS_VERSION}"
 echo "Prepare CNI_PLUGINS ${CNI_PLUGINS_VERSION} release ..."
 grep -q "^${CNI_PLUGINS_VERSION}\$" binaries/.CNI_PLUGINS 2>/dev/null || {
@@ -77,7 +60,32 @@ grep -q "^${CNI_PLUGINS_VERSION}\$" binaries/.CNI_PLUGINS 2>/dev/null || {
   echo ${CNI_PLUGINS_VERSION} > binaries/.cni-plugins
 }
 
+#containerd
+CONTAINERD_VERSION=${CONTAINERD_VERSION:-"1.3.4"}
+CONTAINERD="containerd-${CONTAINERD_VERSION}.linux-amd64"
+echo "Prepare CONTAINERD ${CONTAINERD_VERSION} release ..."
+grep -q "^${CONTAINERD_VERSION}\$" binaries/.containerd 2>/dev/null || {
+  curl -L https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/${CONTAINERD}.tar.gz -o binaries/${CONTAINERD}.tar.gz
+  echo ${CONTAINERD_VERSION} > binaries/.containerd
+}
 
+#runc
+RUNC_VERSION=${RUNC_VERSION:-"v1.0.0-rc10"}
+echo "Prepare runc ${RUNC_VERSION} release ..."
+grep -q "^${RUNC_VERSION}\$" binaries/.runc 2>/dev/null || {
+  curl -L https://github.com/opencontainers/runc/releases/download/${RUNC_VERSION}/runc.amd64 -o binaries/runc.amd64
+  echo ${RUNC_VERSION} > binaries/.runc
+}
+
+
+#cri-tools
+CRITOOLS_VERSION=${CRITOOLS_VERSION:-"1.17.0"}
+CRITOOLS="crictl-v${CRITOOLS_VERSION}-linux-amd64"
+echo "Prepare CRITOOLS ${CRITOOLS_VERSION} release ..."
+grep -q "^${CRITOOLS_VERSION}\$" binaries/.critools 2>/dev/null || {
+  curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/v${CRITOOLS_VERSION}/${CRITOOLS}.tar.gz -o binaries/${CRITOOLS}.tar.gz
+  echo ${CRITOOLS_VERSION} > binaries/.critools
+}
 
 echo "Done! All your binaries locate in tests/binaries directory"
 popd

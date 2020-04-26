@@ -12,6 +12,9 @@ include:
 
 {{ kubectl_apply_template("salt://kube-addons/namespace.yaml.jinja",
                           "/etc/kubernetes/addons/namespace.yaml") }}
+
+{{ kubectl_apply_template("salt://kube-addons/rbac_kubelet.yaml.jinja",
+                          "/etc/kubernetes/addons/rbac_kubelet.yaml") }}
 include:
   - .coredns
 {% endif %}
