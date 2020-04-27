@@ -15,4 +15,8 @@ include:
            "label node --overwrite " + grains['nodename'] + " node-role.kubernetes.io/master-",
            onlyif="/bin/true",
            check_cmd="/bin/true") }}
+{{ kubectl("add-worker-label",
+           "label node --overwrite " + grains['nodename'] + " node-role.kubernetes.io/worker=",
+           onlyif="/bin/true",
+           check_cmd="/bin/true") }}
 {% endif %}
