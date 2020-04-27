@@ -1,4 +1,4 @@
-## salt-kube-lite Project
+## SALT-KUBE-LITE Project
 
 the lite version for cleanup salt-kube project and support new kubernetes, full binaries packages provision kubernetes cluster using saltstack.
 
@@ -68,9 +68,17 @@ add it into this files:
 
 - `pillar/local/common/packages_ubuntu.sls`
 
-### TODO
+## 3. TODO
 
-- ~~remove Docker, add Containerd as default container runtime~~
-- ~~remove Flannel, add Cilium as default network~~
-- add terraform to provision cloud resources
+- [x] remove Docker, add Containerd as default container runtime
+- [x] remove Flannel, add Cilium as default network
+- [ ] upgrade cilium version
+- [ ] add terraform to provision cloud resources
 - ...
+
+## 4. Reference
+
+- https://github.com/BadgerOps/salt-workspace
+- https://github.com/mitodl/salt-ops
+- https://github.com/kubic-project/salt
+- https://github.com/kelseyhightower/kubernetes-the-hard-way
