@@ -1,5 +1,4 @@
 ---
-# Source: cilium/charts/agent/templates/svc.yaml
 kind: Service
 apiVersion: v1
 metadata:

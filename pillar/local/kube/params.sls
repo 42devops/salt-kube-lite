@@ -91,22 +91,8 @@ kube_log_level:   '2'
 # CNI network configuration
 cni:
   plugin: 'cilium'
-  cilium_version: 'v1.5.5'
-  cilium_debug: false
-  cilium_disable_ipv4: false
-  # Etcd SSL dirs
-  cilium_cert_dir: /etc/pki
-  # Cilium Network Policy directory
-  cilium_policy_dir: /etc/kubernetes/policy
-  # Limits for apps
-  cilium_memory_limit: 500M
-  cilium_cpu_limit: 500m
-  cilium_memory_requests: 64M
-  cilium_cpu_requests: 100m
-  # Optional features
-  cilium_enable_prometheus: true
+  cilium_version: 'v1.7.2'
   cni_plugins_version: 'v0.8.5'
   cni_plugins_hash: 'bd682ffcf701e8f83283cdff7281aad0c83b02a56084d6e601216210732833f9'
 
-#private_regristry: '172.21.3.76:5000'
 
