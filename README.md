@@ -8,7 +8,7 @@ the lite version for cleanup salt-kube project and support new kubernetes, full 
 - Saltstack 2018.3.3
 - Etcd v3.3.20
 - Containerd 1.3.4
-- Cilium 1.5.5
+- Cilium v1.7.2
 - Kubernetes v1.17.5
 - CoreDNS v1.5.0
 
