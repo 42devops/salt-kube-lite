@@ -72,7 +72,7 @@ add it into this files:
 
 - [x] remove Docker, add Containerd as default container runtime
 - [x] remove Flannel, add Cilium as default network
-- [ ] upgrade cilium version
+- [x] upgrade cilium v1.7.2 version
 - [ ] add terraform to provision cloud resources
 - ...
 
