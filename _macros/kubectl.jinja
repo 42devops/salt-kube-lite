@@ -13,7 +13,7 @@
   caasp_cmd.run:
     - name: kubectl --request-timeout=1m --kubeconfig={{ pillar['paths']['kubeconfig'] }} {{ args }}
     - retry:
-        attempts: 10
+        attempts: 5
         interval: 1
     - require:
       - {{ pillar['paths']['kubeconfig'] }}

@@ -1,43 +1,57 @@
 ---
+# Source: cilium/charts/agent/templates/daemonset.yaml
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
     k8s-app: cilium
-    kubernetes.io/cluster-service: "true"
   name: cilium
   namespace: kube-system
 spec:
   selector:
     matchLabels:
       k8s-app: cilium
-      kubernetes.io/cluster-service: "true"
   template:
     metadata:
       annotations:
-{% if salt.caasp_pillar.get('cni:cilium_enable_prometheus', true) %}
-        prometheus.io/port: "9090"
-        prometheus.io/scrape: "true"
-{% endif %}
         # This annotation plus the CriticalAddonsOnly toleration makes
         # cilium to be a critical pod in the cluster, which ensures cilium
         # gets priority scheduling.
         # https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
         scheduler.alpha.kubernetes.io/critical-pod: ""
-        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"dedicated","operator":"Equal","value":"master","effect":"NoSchedule"}]'
       labels:
         k8s-app: cilium
-        kubernetes.io/cluster-service: "true"
     spec:
       containers:
       - args:
-        - --kvstore=etcd
-        - --kvstore-opt=etcd.config=/var/lib/etcd-config/etcd.config
         - --config-dir=/tmp/cilium/config-map
-        - --container-runtime=containerd
-        - --container-runtime-endpoint=containerd=/var/run/containerd/containerd.sock
         command:
         - cilium-agent
+        livenessProbe:
+          exec:
+            command:
+            - cilium
+            - status
+            - --brief
+          failureThreshold: 10
+          # The initial delay for the liveness probe is intentionally large to
+          # avoid an endless kill & restart cycle if in the event that the initial
+          # bootstrapping takes longer than expected.
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - cilium
+            - status
+            - --brief
+          failureThreshold: 3
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 5
         env:
         - name: K8S_NODE_NAME
           valueFrom:
@@ -61,62 +75,38 @@ spec:
               key: flannel-uninstall-on-exit
               name: cilium-config
               optional: true
-{% if salt.caasp_pillar.get('cni:cilium_enable_prometheus', true) %}
-        # To be removed in Cilium 1.6, use prometheus-serve-addr in the
-        # cilium-config ConfigMap
-        - name: CILIUM_PROMETHEUS_SERVE_ADDR
-          valueFrom:
-            configMapKeyRef:
-              key: prometheus-serve-addr
-              name: cilium-metrics-config
-              optional: true
-{% endif %}
         - name: CILIUM_CLUSTERMESH_CONFIG
           value: /var/lib/cilium/clustermesh/
-        image: docker.io/cilium/cilium:{{ pillar['cni']['cilium_version'] }}
+        - name: CILIUM_CNI_CHAINING_MODE
+          valueFrom:
+            configMapKeyRef:
+              key: cni-chaining-mode
+              name: cilium-config
+              optional: true
+        - name: CILIUM_CUSTOM_CNI_CONF
+          valueFrom:
+            configMapKeyRef:
+              key: custom-cni-conf
+              name: cilium-config
+              optional: true
+        image: "docker.io/cilium/cilium:v1.7.2"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
             exec:
               command:
-              - /cni-install.sh
+              - "/cni-install.sh"
+              - "--enable-debug=false"
           preStop:
             exec:
               command:
               - /cni-uninstall.sh
-        livenessProbe:
-          exec:
-            command:
-            - cilium
-            - status
-            - --brief
-          failureThreshold: 10
-          # The initial delay for the liveness probe is intentionally large to
-          # avoid an endless kill & restart cycle if in the event that the initial
-          # bootstrapping takes longer than expected.
-          initialDelaySeconds: 120
-          periodSeconds: 30
-          successThreshold: 1
-          timeoutSeconds: 5
         name: cilium-agent
-{% if salt.caasp_pillar.get('cni:cilium_enable_prometheus', true) %}
         ports:
         - containerPort: 9090
           hostPort: 9090
           name: prometheus
           protocol: TCP
-{% endif %}
-        readinessProbe:
-          exec:
-            command:
-            - cilium
-            - status
-            - --brief
-          failureThreshold: 3
-          initialDelaySeconds: 5
-          periodSeconds: 30
-          successThreshold: 1
-          timeoutSeconds: 5
         securityContext:
           capabilities:
             add:
@@ -132,9 +122,6 @@ spec:
           name: cni-path
         - mountPath: /host/etc/cni/net.d
           name: etc-cni-netd
-        - mountPath: /var/run/containerd/containerd.sock
-          name: containerd-socket
-          readOnly: true
         - mountPath: /var/lib/etcd-config
           name: etcd-config-path
           readOnly: true
@@ -151,23 +138,20 @@ spec:
         - mountPath: /lib/modules
           name: lib-modules
           readOnly: true
-        - name: cilium-certs
-          mountPath: {{ pillar['cni']['cilium_cert_dir'] }}
-          readOnly: true
-      dnsPolicy: ClusterFirstWithHostNet
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
       hostNetwork: true
-      hostPID: false
       initContainers:
       - command:
         - /init-container.sh
         env:
-        - name: CLEAN_CILIUM_STATE
+        - name: CILIUM_ALL_STATE
           valueFrom:
             configMapKeyRef:
               key: clean-cilium-state
               name: cilium-config
               optional: true
-        - name: CLEAN_CILIUM_BPF_STATE
+        - name: CILIUM_BPF_STATE
           valueFrom:
             configMapKeyRef:
               key: clean-cilium-bpf-state
@@ -179,7 +163,7 @@ spec:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
-        image: docker.io/cilium/cilium-init:2019-04-05
+        image: "docker.io/cilium/cilium:v1.7.2"
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         securityContext:
@@ -190,9 +174,9 @@ spec:
         volumeMounts:
         - mountPath: /sys/fs/bpf
           name: bpf-maps
+          mountPropagation: HostToContainer
         - mountPath: /var/run/cilium
           name: cilium-run
-      priorityClassName: system-node-critical
       restartPolicy: Always
       serviceAccount: cilium
       serviceAccountName: cilium
@@ -210,13 +194,9 @@ spec:
           path: /sys/fs/bpf
           type: DirectoryOrCreate
         name: bpf-maps
-        # To read docker events from the node
-      - name: containerd-socket
-        hostPath:
-          path: /var/run/containerd/containerd.sock
-        # To install cilium cni plugin in the host
+      # To install cilium cni plugin in the host
       - hostPath:
-          path: /opt/cni/bin
+          path:  /opt/cni/bin
           type: DirectoryOrCreate
         name: cni-path
         # To install cilium cni configuration in the host
@@ -224,13 +204,15 @@ spec:
           path: /etc/cni/net.d
           type: DirectoryOrCreate
         name: etc-cni-netd
-      - name: cilium-certs
-        hostPath:
-          path: {{ pillar['cni']['cilium_cert_dir'] }}
         # To be able to load kernel modules
       - hostPath:
           path: /lib/modules
         name: lib-modules
+        # To access iptables concurrently with other processes (e.g. kube-proxy)
+      - hostPath:
+          path: /run/xtables.lock
+          type: FileOrCreate
+        name: xtables-lock
         # To read the etcd config stored in config maps
       - configMap:
           defaultMode: 420
@@ -257,6 +239,5 @@ spec:
         name: cilium-config-path
   updateStrategy:
     rollingUpdate:
-      # Specifies the maximum number of Pods that can be unavailable during the update process.
       maxUnavailable: 2
     type: RollingUpdate

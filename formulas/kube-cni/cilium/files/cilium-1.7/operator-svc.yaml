@@ -1,0 +1,21 @@
+---
+# Source: cilium/charts/operator/templates/svc.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: cilium-operator
+  namespace: kube-system
+  labels:
+    io.cilium/app: operator
+    name: cilium-operator
+spec:
+  clusterIP: None
+  type: ClusterIP
+  ports:
+    - name: metrics
+      port: 6942
+      protocol: TCP
+      targetPort: prometheus
+  selector:
+    io.cilium/app: operator
+    name: cilium-operator

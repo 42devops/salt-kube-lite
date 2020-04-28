@@ -1,0 +1,19 @@
+---
+# Source: cilium/charts/agent/templates/svc.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: cilium-agent
+  namespace: kube-system
+  labels:
+    k8s-app: cilium
+spec:
+  clusterIP: None
+  type: ClusterIP
+  ports:
+  - name: metrics
+    port: 9090
+    protocol: TCP
+    targetPort: prometheus
+  selector:
+    k8s-app: cilium
